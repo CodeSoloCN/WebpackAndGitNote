@@ -1,0 +1,10 @@
+body{
+    background-color: pink;
+}
+body {
+  border: 5 solid red;
+}
+body div {
+  transform: rotate(45deg);
+}
+

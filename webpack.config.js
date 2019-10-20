@@ -6,7 +6,7 @@ let OptimizCssAssetsPlugin = require('optimize-css-assets-webpack-plugin') // �
 let UglyfyJsPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
-    optimization:{ // 优化项
+    optimization:{ // 优化项 使用优化项后需手动配置，否则production模式下将不会自动压缩js
         minimizer:[
             new UglyfyJsPlugin({
                 cache: true, // 是否使用缓存
@@ -29,7 +29,8 @@ module.exports = {
     output: {
         // filename: 'bundle.[hash:8].js', // 打包后的文件名,可以在文件名中添加哈希戳,每次打包生成新文件,可以改变哈希戳的位置
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'dist') //此路径必须为绝对路径,因此需要path.resolve(),可以把相对目录解析为绝对目录,__dirname非必须
+        path: path.resolve(__dirname, 'dist'), //此路径必须为绝对路径,因此需要path.resolve(),可以把相对目录解析为绝对目录,__dirname非必须
+        // publicPath: 'http://www.baidu.com', // 路径前面(如img引入，js引入)，统一加上
     },
     plugins: [ // 数组,放着所有的plugin,无顺序
         new HtmlWebpackPlugin({
@@ -47,7 +48,7 @@ module.exports = {
         }),
     ],
     module: { // 模块
-        rules: [ // 规则
+        rules: [ // 规则 从后往前执行
             {
                 test: /\.css$/,
                 use:[ // 所需loader 支持字符串、对象和数组,若为数组,则从后往前依次使用loader
@@ -86,10 +87,24 @@ module.exports = {
                         ]
                     }
                 },
-                include: path.resolve(__dirname,'src'),
-                exclude: /node_modeles/,
+                include: path.resolve(__dirname,'src'), // 包括 
+                exclude: /node_modeles/, // 排除
             },
-            
+            {
+                test:/\.(png|jpg|gif)$/,
+                use:{
+                    loader: 'url-loader',// 在js中import或者require的图片路径，在css中使用的相对路径 url-loader包含file-loader
+                    options: {
+                        limit: 50*1024, // 单位为Byte
+                        outputPath:'/img/',
+                        // publicPath: 'http://www.baidu.com'
+                    }
+                }  
+            },
+            {
+                test: /\.html$/, // 转换html中img的src路径
+                use: 'html-withimg-loader'
+            },
         ]
 
     }
